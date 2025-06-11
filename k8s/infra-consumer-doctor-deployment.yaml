@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: infra-consumer-doctor
+  namespace: healthmed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: infra-consumer-doctor
+  template:
+    metadata:
+      labels:
+        app: infra-consumer-doctor
+    spec:
+      containers:
+        - name: rabbitmq-consumer-medico
+          image: parmezao/health-med:HealthMed.Doctor.Infra.Consumer-latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: infra-consumer-doctor-config
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"

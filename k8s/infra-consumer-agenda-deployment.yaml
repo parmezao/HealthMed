@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: infra-consumer-agenda
+  namespace: healthmed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: infra-consumer-agenda
+  template:
+    metadata:
+      labels:
+        app: infra-consumer-agenda
+    spec:
+      containers:
+        - name: rabbitmq-consumer-agenda
+          image: parmezao/health-med:HealthMed.Agenda.Infra.Consumer-latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: infra-consumer-agenda-config
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"

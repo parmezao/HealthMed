@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-auth-config
+  namespace: healthmed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-auth
+  template:
+    metadata:
+      labels:
+        app: api-auth
+    spec:
+      containers:
+        - name: api-auth-config-service
+          image: parmezao/health-med:HealthMed.Auth.API-latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ConnectionStrings__postgres
+              value: "Server=postgres-service;Port=5432;Database=HealthMed;User Id=admin;Password=$(POSTGRES_PASSWORD);"
+          envFrom:
+            - configMapRef:
+                name: api-auth-config
+            - secretRef:
+                name: postgres-secret
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10

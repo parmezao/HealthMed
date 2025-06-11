@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: infra-consumer-agenda-config
+  namespace: healthmed
+data:
+  ASPNETCORE_ENVIRONMENT: Production
+  CONSUMER_SERVICE_URL: "http://infra-consumer-agenda-service:8080"
+  DATABASE_URL: "Server=postgres-service;Port=5432;Database=HealthMed;User Id=admin;Password="
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"

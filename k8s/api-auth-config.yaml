@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-auth-config
+  namespace: healthmed
+data:
+  DATABASE_URL: "Server=postgres-service;Port=5432;Database=HealthMed;User Id=admin;Password=;"
+  API_KEY: "api-key"

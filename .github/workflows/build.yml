@@ -1,0 +1,109 @@
+name: Build Tests and Deploy app
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build & Run containers para integração
+        run: docker compose -f docker-compose.yaml up -d --build
+
+      - name: Aguardar APIs estarem disponíveis
+        run: |
+          endpoints=("http://localhost:8081/health" "http://localhost:8083/health" "http://localhost:8084/health" "http://localhost:8085/health")
+          for url in "${endpoints[@]}"; do
+            echo "Esperando $url ficar disponível..."
+            for i in {1..15}; do
+              if curl -s $url | grep -iq "healthy"; then
+                echo "$url está pronto!"
+                break
+              fi
+              echo "Aguardando $url..."
+              sleep 5
+            done
+          done
+
+      - name: Restore
+        run: dotnet restore ./HealthMed.sln
+
+      - name: Build
+        run: dotnet build ./HealthMed.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test ./HealthMed.sln --configuration Release --no-restore --no-build --collect:"XPlat Code Coverage" --logger trx --results-directory coverage
+
+      - name: Code Coverage Summary Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: 'coverage/*/coverage.cobertura.xml'
+          badge: true
+          format: 'markdown'
+          output: 'both'
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-results.md
+
+      - name: Write to Job Summary
+        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+    needs: build
+    strategy:
+      matrix:
+        service: [HealthMed.Gateway.API,HealthMed.Agenda.API,HealthMed.Auth.API,HealthMed.Consultation.API,HealthMed.Medico.API,HealthMed.Paciente.API,HealthMed.Consultation.Infra.Consumer,HealthMed.Doctor.Infra.Consumer,HealthMed.Patient.Infra.Consumer,HealthMed.Agenda.Infra.Consumer,postgres,grafana,prometheus]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker Login
+        uses: docker/login-action@v3.3.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Definir variáveis de contexto e Dockerfile
+        run: |
+          if [[ "${{ matrix.service }}" == "postgres" ]]; then
+            echo "CONTEXT=./Configs" >> $GITHUB_ENV
+            echo "DOCKERFILE=./Configs/Dockerfile.postgres" >> $GITHUB_ENV
+          elif [[ "${{ matrix.service }}" == "grafana" ]]; then
+            echo "CONTEXT=." >> $GITHUB_ENV
+            echo "DOCKERFILE=./Configs/Dockerfile.grafana" >> $GITHUB_ENV
+          elif [[ "${{ matrix.service }}" == "prometheus" ]]; then
+            echo "CONTEXT=." >> $GITHUB_ENV
+            echo "DOCKERFILE=./Configs/Dockerfile.prometheus" >> $GITHUB_ENV
+          else
+            echo "CONTEXT=." >> $GITHUB_ENV
+            echo "DOCKERFILE=./src/${{ matrix.service }}/Dockerfile" >> $GITHUB_ENV
+          fi
+
+      - name: Build & Push Docker Images
+        uses: docker/build-push-action@v6.7.0
+        with:
+          context: ${{ env.CONTEXT }}
+          file: ${{ env.DOCKERFILE }}
+          tags: ${{ env.DOCKERHUB_USERNAME }}/health-med:${{ matrix.service }}-latest
+          push: true

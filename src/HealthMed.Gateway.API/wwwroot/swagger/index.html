@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HealthMed Gateway Swagger</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist/swagger-ui.css">
+  <style>
+    .custom-links {
+      margin: 20px;
+      font-family: Arial, sans-serif;
+    }
+    .custom-links h2 {
+      margin-bottom: 10px;
+    }
+    .custom-links a {
+      display: inline-block;
+      margin: 5px;
+      padding: 8px 12px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    .custom-links a:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <div class="custom-links">
+    <h2>Links para Swagger dos Microserviços</h2>
+    <a href="/auth/swagger/index.html" target="_blank">Auth.API</a>
+    <a href="/medico/swagger/index.html" target="_blank">Medico.API</a>
+    <a href="/paciente/swagger/index.html" target="_blank">Paciente.API</a>
+    <a href="/agenda/swagger/index.html" target="_blank">Agenda.API</a>
+    <a href="/consulta/swagger/index.html" target="_blank">Consulta.API</a>
+  </div>
+  <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
+  <script>
+    const ui = SwaggerUIBundle({
+      url: "/swagger/v1/swagger.json",
+      dom_id: '#swagger-ui'
+    });
+  </script>
+</body>
+</html>

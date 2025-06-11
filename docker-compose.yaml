@@ -1,0 +1,276 @@
+services:
+  api-consultation-service:
+    container_name: api-consultation-service
+    hostname: api-consultation-service
+    build:
+      context: .
+      dockerfile: ./src/HealthMed.Consultation.API/Dockerfile
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    depends_on:
+      - db
+      - rabbitmq
+    ports:
+      - "8090:8080"
+    networks:
+      - default
+
+  api-patient-service:
+    container_name: api-patient-service
+    hostname: api-patient-service
+    build:
+      context: .
+      dockerfile: ./src/HealthMed.Paciente.API/Dockerfile
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    depends_on:
+      - db
+      - rabbitmq
+    ports:
+      - "8084:8080"
+    networks:
+      - default
+
+  api-auth-config-service:
+    container_name: api-auth-config-service
+    hostname: api-auth-config-service
+    build:
+      context: .
+      dockerfile: ./src/HealthMed.Auth.API/Dockerfile
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+    depends_on:
+      - db
+    ports:
+      - "8081:8080"
+    networks:
+      - default
+
+  api-doctor-service:
+    container_name: api-doctor-service
+    hostname: api-doctor-service
+    build:
+      context: .
+      dockerfile: ./src/HealthMed.Medico.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+    depends_on:
+      - db
+      - rabbitmq
+    ports:
+      - "8083:8080"
+    networks:
+      - default
+
+  api-agenda-service:
+    container_name: api-agenda-service
+    hostname: api-agenda-service
+    build:
+      context: .
+      dockerfile: ./src/HealthMed.Agenda.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+    depends_on:
+      - db
+      - rabbitmq
+    ports:
+      - "8085:8080"
+    networks:
+      - default
+
+  api-gateway-service:
+    container_name: api-gateway-service
+    hostname: api-gateway-service
+    build:
+      context: .
+      dockerfile: ./src/HealthMed.Gateway.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+    depends_on:
+      - api-agenda-service
+      - api-auth-config-service
+      - api-consultation-service
+      - api-doctor-service
+      - api-patient-service
+    ports:
+      - "5000:8080"
+    networks:
+      - default
+
+  db:
+    container_name: postgres
+    build:
+      context: ./Configs
+      dockerfile: Dockerfile.postgres
+    restart: always
+    environment:
+      POSTGRES_DB: HealthMed
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5433:5432"
+    networks:
+      - default
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15692:15692"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    command: >
+      sh -c "
+      rabbitmq-plugins enable --offline rabbitmq_prometheus &&
+      rabbitmq-server"
+    networks:
+      - default
+
+  prometheus:
+    build: 
+      context: ./Configs
+      dockerfile: Dockerfile.prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./Configs/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - default
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin@123
+    volumes:
+      - ./grafana:/var/lib/grafana
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - default
+
+  rabbitmq-consumer:
+    container_name: rabbitmq-consumer-consulta
+    hostname: rabbitmq-consumer
+    build:
+      context: .
+      dockerfile: ./src/HealthMed.Consultation.Infra.Consumer/Dockerfile
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    depends_on:
+      - db
+      - rabbitmq
+    ports:
+      - "8082:8080"
+    networks:
+      - default
+
+  rabbitmq-consumer-paciente:
+    container_name: rabbitmq-consumer-paciente
+    hostname: rabbitmq-consumer-paciente
+    build:
+      context: .
+      dockerfile: ./src/HealthMed.Patient.Infra.Consumer/Dockerfile
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    depends_on:
+      - db
+      - rabbitmq
+    ports:
+      - "8086:8080"
+    networks:
+      - default
+
+  rabbitmq-consumer-medico:
+    container_name: rabbitmq-consumer-medico
+    hostname: rabbitmq-consumer-medico
+    build:
+      context: .
+      dockerfile: ./src/HealthMed.Doctor.Infra.Consumer/Dockerfile
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    depends_on:
+      - db
+      - rabbitmq
+    ports:
+      - "8087:8080"
+    networks:
+      - default
+
+  rabbitmq-consumer-agenda:
+    container_name: rabbitmq-consumer-agenda
+    hostname: rabbitmq-consumer-agenda
+    build:
+      context: .
+      dockerfile: ./src/HealthMed.Agenda.Infra.Consumer/Dockerfile
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    depends_on:
+      - db
+      - rabbitmq
+    ports:
+      - "8089:8080"
+    networks:
+      - default
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "16543:80"
+    depends_on:
+      - db
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
+    name: HealthMed

@@ -1,0 +1,55 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: healthmed-ingress
+  namespace: healthmed
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: healthmed.local
+      http:
+        paths:
+          - path: /auth
+            pathType: Prefix
+            backend:
+              service:
+                name: api-auth-config-service
+                port:
+                  number: 8080
+          - path: /paciente
+            pathType: Prefix
+            backend:
+              service:
+                name: api-patient-service
+                port:
+                  number: 8080
+          - path: /medico
+            pathType: Prefix
+            backend:
+              service:
+                name: api-doctor-service
+                port:
+                  number: 8080
+          - path: /consulta
+            pathType: Prefix
+            backend:
+              service:
+                name: api-consultation-service
+                port:
+                  number: 8080
+          - path: /agenda
+            pathType: Prefix
+            backend:
+              service:
+                name: api-agenda-service
+                port:
+                  number: 8080
+          - path: /gateway
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway-service
+                port:
+                  number: 8080

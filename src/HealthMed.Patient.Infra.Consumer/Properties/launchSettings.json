@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "HealthMed.Patient.Infra.Consumer": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

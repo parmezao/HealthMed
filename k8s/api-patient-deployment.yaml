@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-patient-deployment
+  namespace: healthmed
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-patient
+  template:
+    metadata:
+      labels:
+        app: api-patient
+    spec:
+      containers:
+        - name: api-patient-service
+          image: parmezao/health-med:HealthMed.Paciente.API-latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ConnectionStrings__postgres
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_CONNECTION
+          envFrom:
+            - configMapRef:
+                name: api-patient-config
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10

@@ -1,0 +1,33 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'api-agenda-service'
+    static_configs:
+      - targets:
+          - api-agenda-service:8080
+
+  - job_name: 'api-auth-config-service'
+    static_configs:
+      - targets:
+          - api-auth-config-service:8080
+
+  - job_name: 'api-consultation-service'
+    static_configs:
+      - targets:
+          - api-consultation-service:8080
+
+  - job_name: 'api-doctor-service'
+    static_configs:
+      - targets:
+          - api-doctor-service:8080
+
+  - job_name: 'api-patient-service'
+    static_configs:
+      - targets:
+          - api-patient-service:8080
+          
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets:
+          - rabbitmq:15692
