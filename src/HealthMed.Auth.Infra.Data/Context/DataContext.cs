@@ -2,7 +2,6 @@
 using HealthMed.Auth.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.Threading.Tasks;
 
 namespace HealthMed.Auth.Infra.Data.Context
 {

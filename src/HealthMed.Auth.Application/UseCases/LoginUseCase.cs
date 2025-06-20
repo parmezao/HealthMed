@@ -37,8 +37,8 @@ namespace HealthMed.Auth.Application.UseCases
             // 5. Claims personalizadas
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, usuario.Nome),
-                new Claim(ClaimTypes.Role, usuario.Role)
+                new(ClaimTypes.Name, usuario.Nome),
+                new(ClaimTypes.Role, usuario.Role)
             };
 
             if (!string.IsNullOrWhiteSpace(usuario.Cpf))

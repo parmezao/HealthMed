@@ -1,23 +1,16 @@
 ﻿using HealthMed.Auth.Application.Interfaces;
-using HealthMed.Auth.Application.UseCases;
 using HealthMed.Auth.Application.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthMed.Auth.API.Controllers
 {
-
     [ApiController]
     [Route("[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController(ILoginUseCase loginUseCase, ILogger<AuthController> logger) : ControllerBase
     {
-        private readonly ILoginUseCase _loginUseCase;
+        private readonly ILoginUseCase _loginUseCase = loginUseCase;
  
-        private readonly ILogger<AuthController> _logger;
-        public AuthController(ILoginUseCase loginUseCase, ILogger<AuthController> logger)
-        {
-            _loginUseCase = loginUseCase;
-            _logger = logger;
-        }
+        private readonly ILogger<AuthController> _logger = logger;
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
@@ -36,7 +29,7 @@ namespace HealthMed.Auth.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Erro ao autenticar o usuário.{ex.Message}");
+                _logger.LogError(ex, $"Erro ao autenticar o usuário. {ex.Message}");
                 return StatusCode(500, "Erro interno ao processar login.");
             }
         }

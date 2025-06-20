@@ -3,11 +3,6 @@ using HealthMed.Patient.Domain.Entities;
 using HealthMed.Patient.Domain.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HealthMed.Patient.Application.Consumers
 {

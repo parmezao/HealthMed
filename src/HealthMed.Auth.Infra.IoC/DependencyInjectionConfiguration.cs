@@ -17,6 +17,7 @@ using HealthMed.Auth.Application.UseCases;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+
 namespace HealthMed.Auth.Infra.IoC
 {
     public static class DependencyInjectionConfiguration
@@ -50,6 +51,7 @@ namespace HealthMed.Auth.Infra.IoC
                 });
 
             const string serviceName = "AuthAPI";
+
             // Adicionar Health Checks
             services.AddHealthChecks()
                 .AddCheck("API Health", () =>

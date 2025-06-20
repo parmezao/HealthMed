@@ -2,13 +2,8 @@
 using HealthMed.Auth.Domain.Entities;
 using HealthMed.Auth.Domain.Interfaces;
 using HealthMed.Auth.Infra.Data.Context;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
+
 namespace HealthMed.Auth.Infra.Data.Repositories
 {
     public class UsuarioRepository(DataContext dataContext) : IUsuarioRepository
@@ -40,12 +35,8 @@ namespace HealthMed.Auth.Infra.Data.Repositories
 
         public Task<bool> VerificarSenhaAsync(Usuario usuario, string senha)
         {
-
-
             ////string hash = BCrypt.Net.BCrypt.HashPassword("123456", workFactor: 11);
             ////bool valido = BCrypt.Net.BCrypt.Verify("123456", hash);            
-
-   
 
             return Task.FromResult(BCrypt.Net.BCrypt.Verify(senha, usuario.SenhaHash));
         }

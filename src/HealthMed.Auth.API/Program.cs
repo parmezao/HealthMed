@@ -1,12 +1,12 @@
 using HealthMed.Auth.Infra.IoC;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
     .AddEnvironmentVariables();
+
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
@@ -16,6 +16,7 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -33,7 +34,7 @@ app.UseCors("AllowAll");
 
 app.MapPrometheusScrapingEndpoint();
 
- app.UseSwagger();
+app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
@@ -43,6 +44,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
 // Mapear os Endpoints de Health Checks
 app.MapHealthChecks("/health", new HealthCheckOptions
 {
