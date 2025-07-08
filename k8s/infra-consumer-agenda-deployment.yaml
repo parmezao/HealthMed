@@ -19,9 +19,14 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
+          env:
+            - name: ConnectionStrings__postgres
+              value: "Server=postgres-service;Port=5432;Database=HealthMed;User Id=admin;Password=$(POSTGRES_PASSWORD);"            
           envFrom:
             - configMapRef:
                 name: infra-consumer-agenda-config
+            - secretRef:
+                name: postgres-secret                
           resources:
             requests:
               cpu: "50m"
