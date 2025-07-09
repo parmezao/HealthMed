@@ -8,6 +8,6 @@ spec:
     app: api-gateway
   ports:
     - port: 8080
-      targetPort: 5000  # <- alterado conforme porta do container
+      targetPort: 8080  # <- alterado conforme porta do container
       nodePort: 30854
   type: NodePort
